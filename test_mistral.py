@@ -10,7 +10,7 @@ api_key = os.getenv("MISTRAL_API_KEY")
 
 # Verificar que la API Key se haya cargado correctamente
 if not api_key:
-    raise ValueError("❌ ERROR: No se encontró la API Key de Mistral. Verifica el archivo .env y que esté en .gitignore.")
+    raise ValueError(" ERROR: No se encontró la API Key de Mistral. Verifica el archivo .env y que esté en .gitignore.")
 
 # Definir la URL de la API de Mistral
 url = "https://api.mistral.ai/v1/chat/completions"
@@ -33,5 +33,5 @@ response = requests.post(url, json=data, headers=headers)
 if response.status_code == 200:
     print(response.json()["choices"][0]["message"]["content"])
 else:
-    print(f"❌ Error {response.status_code}: {response.text}")
+    print(f" Error {response.status_code}: {response.text}")
 
