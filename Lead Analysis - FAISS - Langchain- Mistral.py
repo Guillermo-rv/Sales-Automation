@@ -32,14 +32,14 @@ scaler = joblib.load("scaler.pkl")
 X_scaled = scaler.transform(X)
 
 # 🔹 Crear índice FAISS
-print("🛠️ Creando índice FAISS...")
+print(" Creando índice FAISS...")
 dimension = X_scaled.shape[1]
 index = faiss.IndexFlatL2(dimension)
 index.add(X_scaled)
 
 #  Guardar índice FAISS
 faiss.write_index(index, "faiss_leads.index")
-print("✅ Índice FAISS creado y guardado como 'faiss_leads.index'")
+print(" Índice FAISS creado y guardado como 'faiss_leads.index'")
 
 #  Función para buscar leads similares
 def find_similar_leads(query_data, k=5):
