@@ -4,19 +4,16 @@ import pandas as pd
 file_path = "Leads_B2B.xlsx"
 df = pd.read_excel(file_path)
 
-#  Exploración rápida de datos
+
 print(" Primeras filas del dataset:")
-print(df.head())  # Primeras 5 filas
+print(df.head())  
 
 print("\n Información general del dataset:")
-print(df.info())  # Información sobre tipos de datos y valores nulos
-
+print(df.info()) 
 print("\n Descripción estadística:")
-print(df.describe())  # Resumen estadístico de las columnas numéricas
-
+print(df.describe())  
 print("\n Valores nulos en cada columna:")
-print(df.isnull().sum())  # Recuento de valores nulos por columna
-
+print(df.isnull().sum()) 
 print("\n Distribución de 'Lead Score':")
 print(df["Lead_Score"].describe())  # Distribución del lead score
 
@@ -44,7 +41,7 @@ def explore_data(df):
 
 explore_data(df)
 
-# 🔹 Seleccionar características clave para el modelo
+# Seleccionar características clave para el modelo
 features = [
     "Crecimiento_Empleados(%)", "Ingresos_Anuales(€M)", "Presencia_Global(Países)",
     "Interacción_Correos(%)", "Tamaño_Equipo_IT"
@@ -56,7 +53,7 @@ y = (df["Lead_Score"] > 40).astype(int)  # 1 = Alta conversión, 0 = Baja conver
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# 🏋️ División de datos
+#  División de datos
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
 #  Entrenar modelo de clasificación
