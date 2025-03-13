@@ -147,7 +147,7 @@ while True:
     print("\n────────────────────────────────────\n")
 
 
-# Agregamos Streamlit
+# Adding Streamlit
 
 import os
 import requests
@@ -157,17 +157,25 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
-#  Cargar variables de entorno
+import os
+import requests
+import streamlit as st
+from dotenv import load_dotenv
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+
+# Load environment variables
 load_dotenv()
 api_key = os.getenv("MISTRAL_API_KEY")
 
 if not api_key:
-    raise ValueError("❌ ERROR: No se encontró la API Key de Mistral en el archivo .env.")
+    raise ValueError("❌ ERROR: No API Key found for Mistral in .env file.")
 
-#  URL de la API de Mistral
+# Mistral API URL
 MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions"
 
-#  Función para hacer consultas a la API de Mistral
+# Function to query Mistral API
 def query_mistral_api(user_input, context=""):
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -176,59 +184,44 @@ def query_mistral_api(user_input, context=""):
     data = {
         "model": "mistral-medium",
         "messages": [{"role": "user", "content": f"{context}\n{user_input}"}],
-        "temperature": 0.7
+        "temperature": 0.5  # Adjusted for better response quality
     }
-
+    
     response = requests.post(MISTRAL_API_URL, json=data, headers=headers)
-
+    
     if response.status_code == 200:
         return response.json()["choices"][0]["message"]["content"]
     else:
         return f"❌ Error: {response.status_code} - {response.text}"
 
-#  Configurar Streamlit
-st.set_page_config(page_title="Ot AI Sales Compliance Assistant", page_icon="📊")
-st.title("📊 OT AI Sales Compliance Assistant")
-st.markdown("### 🚀 Optimiza tus ventas con inteligencia artificial")
+# Streamlit App Setup
+st.set_page_config(page_title="Ot AI Sales Compliance Assistant", page_icon="💼")
+st.title("Ot AI Sales Compliance Assistant")
 
-#  Cargar documentos PDF en FAISS
+# Load FAISS database
 PDF_FOLDER = "C:/Users/guill/OneDrive/Documentos/GitHub/Sales-Automation/pdfs"
 FAISS_DB_PATH = os.path.join(PDF_FOLDER, "faiss_index")
 
-if os.path.exists(FAISS_DB_PATH):
-    st.success("✅ Base de datos FAISS ya existe. Cargando desde disco...")
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    faiss_index = FAISS.load_local(FAISS_DB_PATH, embeddings, allow_dangerous_deserialization=True)
-else:
-    st.warning("⚠️ No se encontró la base de datos FAISS. Creándola ahora...")
-    pdf_files = [f for f in os.listdir(PDF_FOLDER) if f.endswith(".pdf")]
-    documents = []
-    for pdf in pdf_files:
-        loader = PyPDFLoader(os.path.join(PDF_FOLDER, pdf))
-        documents.extend(loader.load())
+st.sidebar.write("🔍 Searching FAISS database...")
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+faiss_index = FAISS.load_local(FAISS_DB_PATH, embeddings, allow_dangerous_deserialization=True)
+st.sidebar.write("✅ FAISS database loaded.")
 
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    faiss_index = FAISS.from_documents(documents, embeddings)
-    faiss_index.save_local(FAISS_DB_PATH)
-    st.success("✅ Base de datos FAISS creada y guardada con éxito.")
-
-#  Input del usuario
-user_query = st.text_input("💬 Escribe tu pregunta:")
-
-if st.button("🔍 Buscar"):
-    if user_query:
-        st.info("🔍 Buscando en la base de datos FAISS...")
-        docs = faiss_index.similarity_search(user_query, k=3)
+# User Input
+def get_response():
+    query = st.text_input("💬 Ask a question:", "")
+    if query:
+        st.write("🔍 Searching in FAISS...")
+        docs = faiss_index.similarity_search(query, k=2)  # Reduced to k=2 for faster response
         context = "\n\n".join([doc.page_content for doc in docs])
-        st.success("✅ Documentos relevantes encontrados.")
-
-        st.info("🤖 Generando respuesta...")
-        response = query_mistral_api(user_query, context)
-        st.markdown("### 🤖 Respuesta:")
+        st.write("✅ Relevant documents found.")
+        
+        st.write("🤖 Generating response...")
+        response = query_mistral_api(query, context)
         st.write(response)
-    else:
-        st.warning("⚠️ Por favor, introduce una pregunta.")
 
-#  Footer profesional
+get_response()
+
+# Footer
 st.markdown("---")
-st.markdown("**Powered by Guillermo Rodríguez Vargas | AI & Compliance Solutions**")
+st.markdown("**Powered by Guillermo Rodriguez**")
